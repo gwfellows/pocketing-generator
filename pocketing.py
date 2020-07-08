@@ -64,8 +64,6 @@ for o in outer:
                 outerPoly.append(p)
         n += 1
 
-print(outerPoly)
-
 #generate pocketed geometry
 #thickness = min thickness of any part
 #radius = fillet radius
@@ -111,3 +109,4 @@ os.system('cmd /c ""C:\Program Files\OpenSCAD\openscad.com" -o "' + outputPath +
 
 # TODO:
 # - switch to freecad scripting? (for true arcs)
+# - diagnose issues when using imported dxfs (like the basebot ones)
