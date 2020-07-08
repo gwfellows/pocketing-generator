@@ -40,11 +40,11 @@ def arcPoly(center, a1, a2, r):
     t = 0
     while t <+ 1:
         a = a2-a1
-        # assume smaller angle, in the future I should fix this
+        # switch to positive angle
         if a <= 0:
             a += math.pi*2
         points.append([center[0] + r*math.cos(a1 + a*t), center[1] + r*math.sin(a1 + a*t)])
-        t += 0.1
+        t += 1/SEGMENTS
     return points
 
 #get outer plate shape from non-construction polyline
