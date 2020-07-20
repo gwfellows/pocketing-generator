@@ -8,7 +8,7 @@ import math
 #$fn
 SEGMENTS = 48 
 
-# python pocket .py <input_file> <thickness> <radius> <output_file>
+# python pocketing.py <input_file> <thickness> <radius> <output_file>
 inputPath = sys.argv[1]
 thickness = float(sys.argv[2])
 radius = float(sys.argv[3])
@@ -99,10 +99,19 @@ def pocketedPlate(thickness, radius):
             )
         return union()(struts)
 
-    a = fillet(((polygon(outerPoly) - offset(delta = -thickness)(polygon(outerPoly)) + addStruts() + addHoles(thickness)) * polygon(outerPoly)), radius) - addHoles(0)
+    a = fillet(((polygon(outerPoly) - offset(delta = -thickness)(polygon(outerPoly)) + addStruts() + addHoles(thickness)) * polygon(outerPoly)), radius)
 
     return a
 
 a = pocketedPlate(thickness, radius)
-scad_render_to_file(a, file_header=f'$fn = {SEGMENTS};', include_orig_code=True)
+scad_render_to_file(a, file_header=f'$fn = {SEGMENTS};', include_orig_code=False)
 os.system('cmd /c ""C:\Program Files\OpenSCAD\openscad.com" -o "' + outputPath + '" pocketing.scad"')
+
+#then add circles
+outFile = ezdxf.readfile(outputPath)
+outMsp = outFile.modelspace()
+
+for c in holeDefs:
+    outMsp.add_circle(center=[c[1],c[2]], radius=c[0])
+
+outFile.save()
