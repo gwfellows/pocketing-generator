@@ -106,7 +106,3 @@ def pocketedPlate(thickness, radius):
 a = pocketedPlate(thickness, radius)
 scad_render_to_file(a, file_header=f'$fn = {SEGMENTS};', include_orig_code=True)
 os.system('cmd /c ""C:\Program Files\OpenSCAD\openscad.com" -o "' + outputPath + '" pocketing.scad"')
-
-# TODO:
-# - switch to freecad scripting? (for true arcs)
-# - diagnose issues when using imported dxfs (like the basebot ones)
