@@ -10,8 +10,8 @@ SEGMENTS = 48
 
 # python pocketing.py <input_file> <thickness> <radius> <output_file>
 inputPath = sys.argv[1]
-thickness = float(sys.argv[2])
-radius = float(sys.argv[3])
+thickness = float(eval(sys.argv[2]))
+radius = float(eval(sys.argv[3]))
 outputPath = sys.argv[4]
 
 dxf = ezdxf.readfile(inputPath)
@@ -38,7 +38,7 @@ for p in polylines:
 def arcPoly(center, a1, a2, r):
     points = []
     t = 0
-    while t <+ 1:
+    while t <= 1:
         a = a2-a1
         # switch to positive angle
         if a <= 0:
