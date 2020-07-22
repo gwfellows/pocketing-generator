@@ -43,7 +43,6 @@ def arcPoly(center, a1, a2, r):
     if a <= 0:
         a += math.pi*2
     while t <= 1 + 1e-9: # deal with floating point precision errors
-        print(t)
         points.append([center[0] + r*math.cos(a1 + a*t), center[1] + r*math.sin(a1 + a*t)])
         t += 1/SEGMENTS
     return points
