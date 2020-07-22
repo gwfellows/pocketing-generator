@@ -6,7 +6,7 @@ import sys
 import math
 
 #$fn
-SEGMENTS = 48 
+SEGMENTS = 48
 
 # python pocketing.py <input_file> <thickness> <radius> <output_file>
 inputPath = sys.argv[1]
@@ -38,11 +38,12 @@ for p in polylines:
 def arcPoly(center, a1, a2, r):
     points = []
     t = 0
-    while t <= 1:
-        a = a2-a1
-        # switch to positive angle
-        if a <= 0:
-            a += math.pi*2
+    a = a2-a1
+    # switch to positive angle
+    if a <= 0:
+        a += math.pi*2
+    while t <= 1 + 1e-9: # deal with floating point precision errors
+        print(t)
         points.append([center[0] + r*math.cos(a1 + a*t), center[1] + r*math.sin(a1 + a*t)])
         t += 1/SEGMENTS
     return points
@@ -60,8 +61,14 @@ for o in outer:
             outerPoly.append([pos[0], pos[1]])
         else:
             posNext = (o.__getitem__((n+1) %  o.__len__())).dxf.location
-            for p in arcPoly(*ezdxf.math.bulge_to_arc(pos,posNext,bulge)):
-                outerPoly.append(p)
+            arc = arcPoly(*ezdxf.math.bulge_to_arc(pos,posNext,bulge))
+            if ezdxf.math.is_close_points(arc[-1], posNext[:-1], abs_tol=1e-9):
+                for p in arc:
+                    outerPoly.append(p)
+            else:
+                arc.reverse()
+                for p in arc:
+                    outerPoly.append(p)
         n += 1
 
 #generate pocketed geometry
@@ -99,8 +106,7 @@ def pocketedPlate(thickness, radius):
             )
         return union()(struts)
 
-    a = fillet(((polygon(outerPoly) - offset(delta = -thickness)(polygon(outerPoly)) + addStruts() + addHoles(thickness)) * polygon(outerPoly)), radius)
-
+    a = fillet((polygon(outerPoly) - offset(delta = -thickness)(polygon(outerPoly)) + addStruts() + addHoles(thickness)), radius) * polygon(outerPoly)
     return a
 
 a = pocketedPlate(thickness, radius)
