@@ -6,8 +6,8 @@ import os, sys, math, argparse
 my_parser = argparse.ArgumentParser(description='pocket a DXF')
 
 my_parser.add_argument('input_path', help='where to find the input DXF')
-my_parser.add_argument('thickness', help='thickness of the struts, in the units of the input file')
-my_parser.add_argument('radius', help='radius of the fillets, in the units of the input file')
+my_parser.add_argument('thickness', help='thickness of the struts, in the units of the input file \n fractions are allowed')
+my_parser.add_argument('radius', help='radius of the fillets, in the units of the input file \n fractions are allowed')
 my_parser.add_argument('output_path', help='where to put the output DXF')
 my_parser.add_argument('-segments', help='number of segments to use when approximating arcs', required=False, default=48)
 
@@ -115,7 +115,7 @@ def pocketedPlate(thickness, radius):
 
 a = pocketedPlate(thickness, radius)
 scad_render_to_file(a, file_header=f'$fn = {SEGMENTS};', include_orig_code=False)
-os.system('cmd /c ""C:\Program Files\OpenSCAD\openscad.com" -o "' + outputPath + '" pocketing.scad"')
+os.system('cmd /c openscad -o ' + outputPath + ' pocketing.scad')
 
 #then add circles
 outFile = ezdxf.readfile(outputPath)
