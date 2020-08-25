@@ -1,18 +1,23 @@
 import ezdxf
 from solid import *
 from solid.utils import *
-import os
-import sys
-import math
+import os, sys, math, argparse
 
-#$fn
-SEGMENTS = 48
+my_parser = argparse.ArgumentParser(description='pocket a DXF')
 
-# python pocketing.py <input_file> <thickness> <radius> <output_file>
-inputPath = sys.argv[1]
-thickness = float(eval(sys.argv[2]))
-radius = float(eval(sys.argv[3]))
-outputPath = sys.argv[4]
+my_parser.add_argument('input_path', help='where to find the input DXF')
+my_parser.add_argument('thickness', help='thickness of the struts, in the units of the input file')
+my_parser.add_argument('radius', help='radius of the fillets, in the units of the input file')
+my_parser.add_argument('output_path', help='where to put the output DXF')
+my_parser.add_argument('-segments', help='number of segments to use when approximating arcs', required=False, default=48)
+
+args = my_parser.parse_args()
+
+inputPath = args.input_path
+thickness = eval(str(args.thickness))
+radius = eval(str(args.radius))
+outputPath = args.output_path
+SEGMENTS = args.segments
 
 dxf = ezdxf.readfile(inputPath)
 mdl = dxf.modelspace()
