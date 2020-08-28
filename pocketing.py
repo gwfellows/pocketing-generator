@@ -17,7 +17,7 @@ inputPath = args.input_path
 thickness = eval(str(args.thickness))
 radius = eval(str(args.radius))
 outputPath = args.output_path
-SEGMENTS = args.segments
+SEGMENTS = int(args.segments)
 
 dxf = ezdxf.readfile(inputPath)
 mdl = dxf.modelspace()
