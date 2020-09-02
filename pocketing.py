@@ -1,23 +1,14 @@
+#this is the cadquery branch!!!!!!!!
+# you can't offset2D circles, for some reason
+
+# how to  fillet inside: offset(-r)( offset(r)(shape) )
+# fillet_inside(shelled_outline + bigger_circles + struts) * outline - holes
+
+
+import cadquery as cq
 import ezdxf
-from solid import *
-from solid.utils import *
-import os, sys, math, argparse
 
-my_parser = argparse.ArgumentParser(description='pocket a DXF')
-
-my_parser.add_argument('input_path', help='where to find the input DXF')
-my_parser.add_argument('thickness', help='thickness of the struts, in the units of the input file \n fractions are allowed')
-my_parser.add_argument('radius', help='radius of the fillets, in the units of the input file \n fractions are allowed')
-my_parser.add_argument('output_path', help='where to put the output DXF')
-my_parser.add_argument('-segments', help='number of segments to use when approximating arcs', required=False, default=48)
-
-args = my_parser.parse_args()
-
-inputPath = args.input_path
-thickness = eval(str(args.thickness))
-radius = eval(str(args.radius))
-outputPath = args.output_path
-SEGMENTS = int(args.segments)
+inputPath = 'tests/simplePlateIn.dxf'
 
 dxf = ezdxf.readfile(inputPath)
 mdl = dxf.modelspace()
@@ -39,18 +30,6 @@ for p in polylines:
     while n <= p.__len__()-2:
         strutDefs.append([p.__getitem__(n).dxf.location, p.__getitem__(n+1).dxf.location])
         n += 1
-
-def arcPoly(center, a1, a2, r):
-    points = []
-    t = 0
-    a = a2-a1
-    # switch to positive angle
-    if a <= 0:
-        a += math.pi*2
-    while t <= 1 + 1e-9: # deal with floating point precision errors
-        points.append([center[0] + r*math.cos(a1 + a*t), center[1] + r*math.sin(a1 + a*t)])
-        t += 1/SEGMENTS
-    return points
 
 #get outer plate shape from non-construction polyline
 outerPoly = []
@@ -75,53 +54,17 @@ for o in outer:
                     outerPoly.append(p)
         n += 1
 
-#generate pocketed geometry
-#thickness = min thickness of any part
-#radius = fillet radius
-def pocketedPlate(thickness, radius):
+#obj2 = cq.importers.importDXF("tests/testtttt.dxf")
+obj = cq.importers.importDXF("tests/circles.dxf")
 
-    def fillet(shape,r):
-        return offset(-r)(
-            offset(r)(
-                shape()
-            )
-        )
+insideShape = obj.wires().toPending().offset2D(-0.05).extrude(1)
+outsideShape = obj.wires().toPending().extrude(1)
 
-    def addHoles(offset): 
-        holes = []
-        for c in holeDefs:
-            holes.append(translate([c[1],c[2]])(
-                circle(c[0]+offset)
-                )
-            )
-        return union()(holes)
+# insideShape = obj2.wires().toPending().offset2D(-0.05).extrude(1)
+# outsideShape = obj2.wires().toPending().extrude(1)
 
-    def addStruts():
-        struts = []
-        for s in strutDefs:
-            struts.append(hull()(
-                translate([s[0][0],s[0][1]])(
-                    circle(d=thickness)
-                ),
-                translate([s[1][0],s[1][1]])(
-                    circle(d=thickness)
-                )
-                )
-            )
-        return union()(struts)
+#m2 = outsideShape2.cut(insideShape2)
 
-    a = fillet((polygon(outerPoly) - offset(delta = -thickness)(polygon(outerPoly)) + addStruts() + addHoles(thickness)), radius) * polygon(outerPoly)
-    return a
+result = outsideShape.cut(insideShape)
 
-a = pocketedPlate(thickness, radius)
-scad_render_to_file(a, file_header=f'$fn = {SEGMENTS};', include_orig_code=False)
-os.system('cmd /c openscad -o ' + outputPath + ' pocketing.scad')
-
-#then add circles
-outFile = ezdxf.readfile(outputPath)
-outMsp = outFile.modelspace()
-
-for c in holeDefs:
-    outMsp.add_circle(center=[c[1],c[2]], radius=c[0])
-
-outFile.save()
+cq.exporters.export(result,'result.step')
